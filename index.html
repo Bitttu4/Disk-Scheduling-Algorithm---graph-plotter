@@ -5,9 +5,7 @@
   <title>Disk Scheduling Visualizer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -36,6 +34,17 @@
     <select id="direction">
       <option value="left">Left</option>
       <option value="right">Right</option>
+    </select>
+
+    <!-- NEW FEATURE -->
+    <label>Select Algorithm</label>
+    <select id="algorithm">
+      <option value="fcfs">FCFS</option>
+      <option value="sstf">SSTF</option>
+      <option value="scan">SCAN</option>
+      <option value="cscan">C-SCAN</option>
+      <option value="look">LOOK</option>
+      <option value="clook">C-LOOK</option>
     </select>
 
     <div class="btn-group">

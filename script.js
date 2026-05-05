@@ -3,7 +3,7 @@ let stepIndex = 0;
 let currentSequence = [];
 
 /* =====================
-   UTILS
+   INPUT PARSE
 ===================== */
 function parseInput() {
   const diskSize = parseInt(document.getElementById("diskSize").value);
@@ -11,8 +11,13 @@ function parseInput() {
   const head = parseInt(document.getElementById("head").value);
   const direction = document.getElementById("direction").value;
 
+  if (!diskSize || isNaN(head) || queue.includes(NaN)) {
+    alert("Please enter valid inputs!");
+    return null;
+  }
+
   if (queue.some(x => x >= diskSize || x < 0)) {
-    alert("Invalid request values!");
+    alert("Requests must be within disk size!");
     return null;
   }
 
@@ -142,7 +147,6 @@ function clook(req, head) {
 /* =====================
    GRAPH
 ===================== */
-
 function drawChart(sequence) {
   const ctx = document.getElementById("chart").getContext("2d");
 
@@ -165,15 +169,42 @@ function drawChart(sequence) {
 }
 
 /* =====================
-   MAIN FUNCTIONS
+   RUN (UPDATED)
 ===================== */
-
 function runSimulation() {
   const data = parseInput();
   if (!data) return;
 
-  const result = fcfs(data.queue, data.head);
+  const algo = document.getElementById("algorithm").value;
+
+  let result;
+
+  switch (algo) {
+    case "fcfs":
+      result = fcfs(data.queue, data.head);
+      break;
+    case "sstf":
+      result = sstf(data.queue, data.head);
+      break;
+    case "scan":
+      result = scan(data.queue, data.head, data.diskSize, data.direction);
+      break;
+    case "cscan":
+      result = cscan(data.queue, data.head, data.diskSize);
+      break;
+    case "look":
+      result = look(data.queue, data.head, data.direction);
+      break;
+    case "clook":
+      result = clook(data.queue, data.head);
+      break;
+    default:
+      alert("Invalid Algorithm");
+      return;
+  }
+
   currentSequence = result.sequence;
+  stepIndex = 0;
 
   drawChart(result.sequence);
 
@@ -184,20 +215,33 @@ function runSimulation() {
     result.sequence.join(" → ");
 }
 
+/* =====================
+   STEP MODE
+===================== */
 function stepMode() {
-  if (!currentSequence.length) return;
-
-  if (stepIndex < currentSequence.length - 1) {
-    let from = currentSequence[stepIndex];
-    let to = currentSequence[stepIndex + 1];
-    let seek = Math.abs(from - to);
-
-    document.getElementById("stepInfo").innerText =
-      `Head moved from ${from} → ${to} (Seek ${seek})`;
-
-    stepIndex++;
+  if (!currentSequence.length) {
+    alert("Run simulation first!");
+    return;
   }
+
+  if (stepIndex >= currentSequence.length - 1) {
+    document.getElementById("stepInfo").innerText = "Completed ✔";
+    return;
+  }
+
+  let from = currentSequence[stepIndex];
+  let to = currentSequence[stepIndex + 1];
+  let seek = Math.abs(from - to);
+
+  document.getElementById("stepInfo").innerText =
+    `Head moved from ${from} → ${to} (Seek = ${seek})`;
+
+  stepIndex++;
 }
+
+/* =====================
+   OTHER
+===================== */
 
 function compareAll() {
   const data = parseInput();
@@ -215,11 +259,7 @@ function compareAll() {
   let tbody = document.querySelector("#compareTable tbody");
   tbody.innerHTML = "";
 
-  let best = Infinity;
-
-  for (let key in results) {
-    best = Math.min(best, results[key].totalSeek);
-  }
+  let best = Math.min(...Object.values(results).map(r => r.totalSeek));
 
   for (let key in results) {
     let row = `<tr style="color:${results[key].totalSeek===best?'#00ffcc':'white'}">
@@ -242,7 +282,7 @@ function resetAll() {
 }
 
 /* =====================
-   EDUCATIONAL SECTION
+   INFO
 ===================== */
 
 document.getElementById("info").innerHTML = `
