@@ -1,230 +1,255 @@
 let chart;
+let stepIndex = 0;
+let currentSequence = [];
 
-// Utility
+/* =====================
+   UTILS
+===================== */
 function parseInput() {
-  const diskSize = +document.getElementById("diskSize").value;
-  const head = +document.getElementById("head").value;
-  const queue = document.getElementById("queue").value
-    .split(",").map(Number);
+  const diskSize = parseInt(document.getElementById("diskSize").value);
+  const queue = document.getElementById("queue").value.split(",").map(Number);
+  const head = parseInt(document.getElementById("head").value);
+  const direction = document.getElementById("direction").value;
 
-  if (queue.some(q => q >= diskSize || q < 0)) {
-    alert("Invalid request out of disk range");
+  if (queue.some(x => x >= diskSize || x < 0)) {
+    alert("Invalid request values!");
     return null;
   }
 
-  return { diskSize, head, queue };
+  return { diskSize, queue, head, direction };
 }
 
-// ======================
-// ALGORITHMS
-// ======================
+/* =====================
+   ALGORITHMS
+===================== */
 
-// FCFS
-function fcfs(head, queue) {
-  let seq = [head, ...queue];
-  return calculate(seq);
+function fcfs(req, head) {
+  let seek = 0, seq = [head];
+  req.forEach(r => {
+    seek += Math.abs(head - r);
+    head = r;
+    seq.push(r);
+  });
+  return { sequence: seq, totalSeek: seek };
 }
 
-// SSTF
-function sstf(head, queue) {
-  let remaining = [...queue];
-  let seq = [head];
+function sstf(req, head) {
+  let seek = 0, seq = [head];
+  let arr = [...req];
 
-  while (remaining.length) {
-    let closest = remaining.reduce((a, b) =>
-      Math.abs(b - head) < Math.abs(a - head) ? b : a
+  while (arr.length) {
+    let closest = arr.reduce((a,b) =>
+      Math.abs(b-head) < Math.abs(a-head) ? b : a
     );
-    seq.push(closest);
-    remaining = remaining.filter(x => x !== closest);
+    seek += Math.abs(head - closest);
     head = closest;
+    seq.push(closest);
+    arr.splice(arr.indexOf(closest),1);
   }
 
-  return calculate(seq);
+  return { sequence: seq, totalSeek: seek };
 }
 
-// SCAN
-function scan(head, queue, diskSize, dir) {
-  let left = queue.filter(x => x < head).sort((a,b)=>b-a);
-  let right = queue.filter(x => x >= head).sort((a,b)=>a-b);
+function scan(req, head, diskSize, dir) {
+  let seek = 0, seq = [head];
+  let left = req.filter(x => x < head).sort((a,b)=>b-a);
+  let right = req.filter(x => x >= head).sort((a,b)=>a-b);
 
-  let seq = [head];
-
-  if (dir === "right") {
-    seq.push(...right, diskSize-1, ...left);
+  if (dir === "left") {
+    left.push(0);
+    [...left, ...right].forEach(r => {
+      seek += Math.abs(head - r);
+      head = r;
+      seq.push(r);
+    });
   } else {
-    seq.push(...left, 0, ...right);
+    right.push(diskSize-1);
+    [...right, ...left].forEach(r => {
+      seek += Math.abs(head - r);
+      head = r;
+      seq.push(r);
+    });
   }
 
-  return calculate(seq);
+  return { sequence: seq, totalSeek: seek };
 }
 
-// LOOK
-function look(head, queue, dir) {
-  let left = queue.filter(x => x < head).sort((a,b)=>b-a);
-  let right = queue.filter(x => x >= head).sort((a,b)=>a-b);
+function cscan(req, head, diskSize) {
+  let seek = 0, seq = [head];
+  let left = req.filter(x => x < head).sort((a,b)=>a-b);
+  let right = req.filter(x => x >= head).sort((a,b)=>a-b);
 
-  let seq = [head];
+  right.push(diskSize-1);
+  right.forEach(r => {
+    seek += Math.abs(head - r);
+    head = r;
+    seq.push(r);
+  });
 
-  if (dir === "right") {
-    seq.push(...right, ...left);
-  } else {
-    seq.push(...left, ...right);
+  head = 0;
+  seq.push(0);
+
+  left.forEach(r => {
+    seek += Math.abs(head - r);
+    head = r;
+    seq.push(r);
+  });
+
+  return { sequence: seq, totalSeek: seek };
+}
+
+function look(req, head, dir) {
+  let seek = 0, seq = [head];
+  let left = req.filter(x => x < head).sort((a,b)=>b-a);
+  let right = req.filter(x => x >= head).sort((a,b)=>a-b);
+
+  let order = dir === "left" ? [...left, ...right] : [...right, ...left];
+
+  order.forEach(r => {
+    seek += Math.abs(head - r);
+    head = r;
+    seq.push(r);
+  });
+
+  return { sequence: seq, totalSeek: seek };
+}
+
+function clook(req, head) {
+  let seek = 0, seq = [head];
+  let left = req.filter(x => x < head).sort((a,b)=>a-b);
+  let right = req.filter(x => x >= head).sort((a,b)=>a-b);
+
+  right.forEach(r => {
+    seek += Math.abs(head - r);
+    head = r;
+    seq.push(r);
+  });
+
+  if (left.length) {
+    head = left[0];
+    seq.push(head);
   }
 
-  return calculate(seq);
+  left.forEach(r => {
+    seek += Math.abs(head - r);
+    head = r;
+    seq.push(r);
+  });
+
+  return { sequence: seq, totalSeek: seek };
 }
 
-// C-SCAN
-function cscan(head, queue, diskSize) {
-  let left = queue.filter(x => x < head).sort((a,b)=>a-b);
-  let right = queue.filter(x => x >= head).sort((a,b)=>a-b);
+/* =====================
+   GRAPH
+===================== */
 
-  let seq = [head, ...right, diskSize-1, 0, ...left];
-  return calculate(seq);
-}
+function drawChart(sequence) {
+  const ctx = document.getElementById("chart").getContext("2d");
 
-// C-LOOK
-function clook(head, queue) {
-  let left = queue.filter(x => x < head).sort((a,b)=>a-b);
-  let right = queue.filter(x => x >= head).sort((a,b)=>a-b);
-
-  let seq = [head, ...right, ...left];
-  return calculate(seq);
-}
-
-// ======================
-// CALCULATE SEEK
-// ======================
-
-function calculate(seq) {
-  let total = 0;
-
-  for (let i = 1; i < seq.length; i++) {
-    total += Math.abs(seq[i] - seq[i - 1]);
-  }
-
-  return {
-    sequence: seq,
-    total,
-    avg: total / (seq.length - 1)
-  };
-}
-
-// ======================
-// VISUALIZATION
-// ======================
-
-function plotGraph(sequence) {
   if (chart) chart.destroy();
 
-  chart = new Chart(document.getElementById("chart"), {
+  chart = new Chart(ctx, {
     type: "line",
     data: {
       labels: sequence.map((_, i) => i),
       datasets: [{
         label: "Head Movement",
         data: sequence,
-        borderWidth: 2,
-        tension: 0.3
+        borderWidth: 2
       }]
     },
     options: {
-      scales: {
-        y: { title: { display: true, text: "Track" } },
-        x: { title: { display: true, text: "Step" } }
-      }
+      animation: true
     }
   });
 }
 
-// ======================
-// RUN
-// ======================
+/* =====================
+   MAIN FUNCTIONS
+===================== */
 
 function runSimulation() {
   const data = parseInput();
   if (!data) return;
 
-  let res = fcfs(data.head, data.queue);
+  const result = fcfs(data.queue, data.head);
+  currentSequence = result.sequence;
 
-  display(res);
-  plotGraph(res.sequence);
-}
+  drawChart(result.sequence);
 
-// ======================
-// STEP MODE
-// ======================
-
-async function stepMode() {
-  const data = parseInput();
-  if (!data) return;
-
-  let res = sstf(data.head, data.queue);
-
-  for (let i = 1; i < res.sequence.length; i++) {
-    let prev = res.sequence[i-1];
-    let curr = res.sequence[i];
-
-    document.getElementById("seekSequence").innerText =
-      `Step ${i}: ${prev} → ${curr}`;
-
-    plotGraph(res.sequence.slice(0, i+1));
-
-    await new Promise(r => setTimeout(r, 800));
-  }
-
-  display(res);
-}
-
-// ======================
-// DISPLAY
-// ======================
-
-function display(res) {
-  document.getElementById("seekSequence").innerText =
-    "Sequence: " + res.sequence.join(" → ");
-
-  document.getElementById("totalSeek").innerText =
-    "Total Seek Time: " + res.total;
-
+  document.getElementById("totalSeek").innerText = result.totalSeek;
   document.getElementById("avgSeek").innerText =
-    "Average Seek Time: " + res.avg.toFixed(2);
+    (result.totalSeek / data.queue.length).toFixed(2);
+  document.getElementById("sequence").innerText =
+    result.sequence.join(" → ");
 }
 
-// ======================
-// COMPARE
-// ======================
+function stepMode() {
+  if (!currentSequence.length) return;
+
+  if (stepIndex < currentSequence.length - 1) {
+    let from = currentSequence[stepIndex];
+    let to = currentSequence[stepIndex + 1];
+    let seek = Math.abs(from - to);
+
+    document.getElementById("stepInfo").innerText =
+      `Head moved from ${from} → ${to} (Seek ${seek})`;
+
+    stepIndex++;
+  }
+}
 
 function compareAll() {
   const data = parseInput();
   if (!data) return;
 
   const results = {
-    FCFS: fcfs(data.head, data.queue),
-    SSTF: sstf(data.head, data.queue),
-    SCAN: scan(data.head, data.queue, data.diskSize, "right"),
-    LOOK: look(data.head, data.queue, "right"),
-    CSCAN: cscan(data.head, data.queue, data.diskSize),
-    CLOOK: clook(data.head, data.queue)
+    FCFS: fcfs(data.queue, data.head),
+    SSTF: sstf(data.queue, data.head),
+    SCAN: scan(data.queue, data.head, data.diskSize, data.direction),
+    CSCAN: cscan(data.queue, data.head, data.diskSize),
+    LOOK: look(data.queue, data.head, data.direction),
+    CLOOK: clook(data.queue, data.head)
   };
 
-  console.table(results);
+  let tbody = document.querySelector("#compareTable tbody");
+  tbody.innerHTML = "";
 
-  alert("Check console for comparison table");
-}
+  let best = Infinity;
 
-// ======================
-// UTIL
-// ======================
+  for (let key in results) {
+    best = Math.min(best, results[key].totalSeek);
+  }
 
-function resetAll() {
-  location.reload();
+  for (let key in results) {
+    let row = `<tr style="color:${results[key].totalSeek===best?'#00ffcc':'white'}">
+      <td>${key}</td>
+      <td>${results[key].totalSeek}</td>
+    </tr>`;
+    tbody.innerHTML += row;
+  }
 }
 
 function loadExample() {
   document.getElementById("queue").value =
     "98,183,37,122,14,124,65,67";
-
   document.getElementById("head").value = 53;
   document.getElementById("diskSize").value = 200;
 }
+
+function resetAll() {
+  location.reload();
+}
+
+/* =====================
+   EDUCATIONAL SECTION
+===================== */
+
+document.getElementById("info").innerHTML = `
+<b>FCFS:</b> Simple, no starvation<br>
+<b>SSTF:</b> Fast but may starve<br>
+<b>SCAN:</b> Elevator algorithm<br>
+<b>C-SCAN:</b> Circular movement<br>
+<b>LOOK:</b> Stops at last request<br>
+<b>C-LOOK:</b> Circular LOOK
+`;

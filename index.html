@@ -3,91 +3,87 @@
 <head>
   <meta charset="UTF-8">
   <title>Disk Scheduling Visualizer</title>
-
-  <!-- Tailwind -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <style>
-    body {
-      background: #0f172a;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
+<body>
 
-<body class="text-white p-6">
+<header>
+  <h1>Disk Scheduling Visualizer</h1>
+  <p>Interactive OS Algorithm Simulator</p>
+</header>
 
-  <h1 class="text-3xl font-bold mb-6 text-center">
-    Disk Scheduling Visualizer
-  </h1>
+<div class="container">
 
-  <!-- INPUT CARD -->
-  <div class="bg-white/10 backdrop-blur-md p-6 rounded-xl shadow-lg">
+  <!-- INPUT PANEL -->
+  <div class="card">
+    <h2>Input</h2>
 
-    <div class="grid md:grid-cols-2 gap-4">
+    <label>Disk Size</label>
+    <input type="number" id="diskSize" placeholder="e.g. 200">
 
-      <input id="diskSize" type="number" placeholder="Disk Size (e.g. 200)"
-        class="p-2 rounded bg-gray-800">
+    <label>Request Queue</label>
+    <input type="text" id="queue" placeholder="98,183,37,122,14,124,65,67">
 
-      <input id="head" type="number" placeholder="Initial Head"
-        class="p-2 rounded bg-gray-800">
+    <label>Initial Head Position</label>
+    <input type="number" id="head">
 
-      <input id="queue" type="text"
-        placeholder="Queue (e.g. 98,183,37...)"
-        class="p-2 rounded bg-gray-800 col-span-2">
+    <label>Direction</label>
+    <select id="direction">
+      <option value="left">Left</option>
+      <option value="right">Right</option>
+    </select>
 
-      <select id="direction" class="p-2 rounded bg-gray-800">
-        <option value="right">Right</option>
-        <option value="left">Left</option>
-      </select>
-
+    <div class="btn-group">
+      <button onclick="runSimulation()">Run</button>
+      <button onclick="stepMode()">Step Mode</button>
+      <button onclick="compareAll()">Compare</button>
+      <button onclick="loadExample()">Example</button>
+      <button onclick="resetAll()">Reset</button>
     </div>
-
-    <div class="mt-4 flex gap-3 flex-wrap">
-      <button onclick="runSimulation()" class="bg-blue-500 px-4 py-2 rounded">
-        Run Simulation
-      </button>
-
-      <button onclick="stepMode()" class="bg-yellow-500 px-4 py-2 rounded">
-        Step Mode
-      </button>
-
-      <button onclick="resetAll()" class="bg-red-500 px-4 py-2 rounded">
-        Reset
-      </button>
-
-      <button onclick="loadExample()" class="bg-green-500 px-4 py-2 rounded">
-        Load Example
-      </button>
-
-      <button onclick="compareAll()" class="bg-purple-500 px-4 py-2 rounded">
-        Compare All
-      </button>
-    </div>
-
-  </div>
-
-  <!-- METRICS -->
-  <div class="mt-6 bg-white/10 p-4 rounded">
-    <p id="seekSequence"></p>
-    <p id="totalSeek"></p>
-    <p id="avgSeek"></p>
   </div>
 
   <!-- GRAPH -->
-  <div class="mt-6 bg-white/10 p-4 rounded">
+  <div class="card">
+    <h2>Visualization</h2>
     <canvas id="chart"></canvas>
+    <p id="stepInfo"></p>
   </div>
 
-  <!-- EDUCATION -->
-  <div class="mt-6 bg-white/10 p-4 rounded">
-    <h2 class="text-xl font-bold mb-2">Algorithms Info</h2>
-    <p id="infoBox"></p>
+  <!-- METRICS -->
+  <div class="card">
+    <h2>Metrics</h2>
+    <p>Total Seek: <span id="totalSeek">-</span></p>
+    <p>Average Seek: <span id="avgSeek">-</span></p>
+    <p>Sequence: <span id="sequence">-</span></p>
   </div>
 
-  <script src="script.js"></script>
+  <!-- COMPARISON -->
+  <div class="card">
+    <h2>Comparison</h2>
+    <table id="compareTable">
+      <thead>
+        <tr>
+          <th>Algorithm</th>
+          <th>Total Seek</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
+  <!-- EDUCATIONAL -->
+  <div class="card">
+    <h2>Algorithms Info</h2>
+    <div id="info"></div>
+  </div>
+
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
