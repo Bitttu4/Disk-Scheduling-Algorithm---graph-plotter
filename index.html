@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Disk Scheduling Visualizer</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      background: #0f172a;
+    }
+  </style>
+</head>
+
+<body class="text-white p-6">
+
+  <h1 class="text-3xl font-bold mb-6 text-center">
+    Disk Scheduling Visualizer
+  </h1>
+
+  <!-- INPUT CARD -->
+  <div class="bg-white/10 backdrop-blur-md p-6 rounded-xl shadow-lg">
+
+    <div class="grid md:grid-cols-2 gap-4">
+
+      <input id="diskSize" type="number" placeholder="Disk Size (e.g. 200)"
+        class="p-2 rounded bg-gray-800">
+
+      <input id="head" type="number" placeholder="Initial Head"
+        class="p-2 rounded bg-gray-800">
+
+      <input id="queue" type="text"
+        placeholder="Queue (e.g. 98,183,37...)"
+        class="p-2 rounded bg-gray-800 col-span-2">
+
+      <select id="direction" class="p-2 rounded bg-gray-800">
+        <option value="right">Right</option>
+        <option value="left">Left</option>
+      </select>
+
+    </div>
+
+    <div class="mt-4 flex gap-3 flex-wrap">
+      <button onclick="runSimulation()" class="bg-blue-500 px-4 py-2 rounded">
+        Run Simulation
+      </button>
+
+      <button onclick="stepMode()" class="bg-yellow-500 px-4 py-2 rounded">
+        Step Mode
+      </button>
+
+      <button onclick="resetAll()" class="bg-red-500 px-4 py-2 rounded">
+        Reset
+      </button>
+
+      <button onclick="loadExample()" class="bg-green-500 px-4 py-2 rounded">
+        Load Example
+      </button>
+
+      <button onclick="compareAll()" class="bg-purple-500 px-4 py-2 rounded">
+        Compare All
+      </button>
+    </div>
+
+  </div>
+
+  <!-- METRICS -->
+  <div class="mt-6 bg-white/10 p-4 rounded">
+    <p id="seekSequence"></p>
+    <p id="totalSeek"></p>
+    <p id="avgSeek"></p>
+  </div>
+
+  <!-- GRAPH -->
+  <div class="mt-6 bg-white/10 p-4 rounded">
+    <canvas id="chart"></canvas>
+  </div>
+
+  <!-- EDUCATION -->
+  <div class="mt-6 bg-white/10 p-4 rounded">
+    <h2 class="text-xl font-bold mb-2">Algorithms Info</h2>
+    <p id="infoBox"></p>
+  </div>
+
+  <script src="script.js"></script>
+
+</body>
+</html>
