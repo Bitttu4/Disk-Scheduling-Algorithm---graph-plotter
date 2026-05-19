@@ -2,7 +2,7 @@
 
 A premium interactive web app to visualize disk scheduling algorithms.
 
-## 🚀 Features
+##  Features
 
 - FCFS, SSTF, SCAN, C-SCAN, LOOK, C-LOOK
 - Step-by-step animation
@@ -11,7 +11,7 @@ A premium interactive web app to visualize disk scheduling algorithms.
 - Error handling
 - Dark UI (glassmorphism)
 
-## 📊 Algorithms Covered
+##  Algorithms Covered
 
 | Algorithm | Description |
 |----------|------------|
@@ -22,9 +22,9 @@ A premium interactive web app to visualize disk scheduling algorithms.
 | LOOK | Optimized SCAN |
 | C-LOOK | Optimized C-SCAN |
 
-## 🖥️ Screenshots
+##  Screenshots
 
-(Add screenshots here)
+
 
 ## ⚙️ How to Run
 
@@ -39,8 +39,9 @@ Helps students understand:
 - Seek optimization
 - Performance comparison
 
-## 📌 Future Improvements
+##  Future Improvements
 
+- Accurate results 
 - D3.js animations
 - Export graphs
 - Real-time speed controls
