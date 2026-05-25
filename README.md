@@ -24,7 +24,6 @@ A premium interactive web app to visualize disk scheduling algorithms.
 
 ##  Screenshots
 
-<img width="1886" height="954" alt="image" src="https://github.com/user-attachments/assets/81b14b5b-0e37-4def-8ab9-b2a38ff7f394" />
 <img width="1889" height="960" alt="image" src="https://github.com/user-attachments/assets/3d68ea18-1e38-4f2a-b66d-32a86b9eec05" />
 <img width="531" height="339" alt="image" src="https://github.com/user-attachments/assets/fca91caf-0da5-4d39-9b4f-d30a44b912fd" />
 <img width="1893" height="971" alt="image" src="https://github.com/user-attachments/assets/43140d04-d534-407f-9379-f6f66777a18b" />
