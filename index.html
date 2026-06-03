@@ -1,98 +1,133 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Disk Scheduling Visualizer</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Disk Scheduling Algorithm Graph Plotter | Enhanced</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
+    <div class="container">
+        <header>
+            <h1>Disk Scheduling Algorithm Graph Plotter</h1>
+            <p>FCFS | SSTF | SCAN | C-SCAN | LOOK | C-LOOK | Step-by-step head movement visualization</p>
+        </header>
 
-<header>
-  <h1>Disk Scheduling Visualizer</h1>
-  <p>Interactive OS Algorithm Simulator</p>
-</header>
+        <div class="controls">
+            <div class="input-group">
+                <label for="requestQueue">Request Queue</label>
+                <input type="text" id="requestQueue" placeholder="e.g., 98,183,37,122,14,124,65,67" value="98,183,37,122,14,124,65,67">
+            </div>
+            <div class="input-group">
+                <label for="headStart">Initial Head Position</label>
+                <input type="number" id="headStart" value="53" step="1">
+            </div>
+            <div class="input-group">
+                <label for="diskSize">Disk Size (cylinders)</label>
+                <input type="number" id="diskSize" value="200" min="1" step="1">
+            </div>
+            <div class="input-group">
+                <label for="direction">Direction (for SCAN/C-SCAN/LOOK)</label>
+                <select id="direction">
+                    <option value="right">Right (towards higher cylinders)</option>
+                    <option value="left">Left (towards lower cylinders)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="algorithm">Algorithm</label>
+                <select id="algorithm">
+                    <option value="fcfs">FCFS</option>
+                    <option value="sstf">SSTF</option>
+                    <option value="scan">SCAN</option>
+                    <option value="cscan">C-SCAN</option>
+                    <option value="look">LOOK</option>
+                    <option value="clook">C-LOOK</option>
+                </select>
+            </div>
+            <div class="button-group">
+                <button id="runBtn" class="btn primary">Run Simulation</button>
+                <button id="compareBtn" class="btn secondary">Compare All</button>
+                <button id="resetBtn" class="btn danger">Reset</button>
+            </div>
+        </div>
 
-<div class="container">
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Seek Time</h3>
+                <p id="totalSeek">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Average Seek</h3>
+                <p id="avgSeek">0.00</p>
+            </div>
+            <div class="stat-card">
+                <h3>Head Movements</h3>
+                <p id="headMovements">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Throughput</h3>
+                <p id="throughput">0.00</p>
+            </div>
+        </div>
 
-  <!-- INPUT PANEL -->
-  <div class="card">
-    <h2>Input</h2>
+        <!-- Disk Head Movement Visualization -->
+        <div class="visualization-section">
+            <h2>Disk Head Path</h2>
+            <div id="headPathContainer" class="head-path"></div>
+        </div>
 
-    <label>Disk Size</label>
-    <input type="number" id="diskSize" placeholder="e.g. 200">
+        <!-- Playback Controls -->
+        <div class="playback-controls">
+            <button id="playBtn" class="playback" disabled>Play</button>
+            <button id="pauseBtn" class="playback" disabled>Pause</button>
+            <button id="nextBtn" class="playback" disabled>Next</button>
+            <button id="prevBtn" class="playback" disabled>Previous</button>
+            <button id="resetSimBtn" class="playback" disabled>Reset Sim</button>
+        </div>
 
-    <label>Request Queue</label>
-    <input type="text" id="queue" placeholder="98,183,37,122,14,124,65,67">
+        <!-- Step Table -->
+        <div class="table-section">
+            <h2>Simulation Steps</h2>
+            <div class="table-wrapper">
+                <table id="stepTable">
+                    <thead>
+                        <tr><th>Step</th><th>Request</th><th>Head Position</th><th>Seek Distance</th><th>Cumulative Seek</th></tr>
+                    </thead>
+                    <tbody id="stepTableBody">
+                        <tr><td colspan="5">Run simulation to see steps</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-    <label>Initial Head Position</label>
-    <input type="number" id="head">
+        <!-- Graph: Head Movement Over Time -->
+        <div class="graph-section">
+            <h2>Head Movement Trajectory</h2>
+            <canvas id="headMovementChart" width="800" height="400"></canvas>
+        </div>
 
-    <label>Direction</label>
-    <select id="direction">
-      <option value="left">Left</option>
-      <option value="right">Right</option>
-    </select>
+        <!-- Graph: Seek Distance per Step -->
+        <div class="graph-section">
+            <h2>Seek Distance per Step</h2>
+            <canvas id="seekDistanceChart" width="800" height="400"></canvas>
+        </div>
 
-    <!-- NEW FEATURE -->
-    <label>Select Algorithm</label>
-    <select id="algorithm">
-      <option value="fcfs">FCFS</option>
-      <option value="sstf">SSTF</option>
-      <option value="scan">SCAN</option>
-      <option value="cscan">C-SCAN</option>
-      <option value="look">LOOK</option>
-      <option value="clook">C-LOOK</option>
-    </select>
+        <!-- Algorithm Comparison -->
+        <div class="graph-section comparison-graph">
+            <h2>Algorithm Comparison (Total Seek Time)</h2>
+            <canvas id="comparisonChart" width="800" height="400"></canvas>
+            <div id="comparisonTableContainer" class="comparison-table"></div>
+        </div>
 
-    <div class="btn-group">
-      <button onclick="runSimulation()">Run</button>
-      <button onclick="stepMode()">Step Mode</button>
-      <button onclick="compareAll()">Compare</button>
-      <button onclick="loadExample()">Example</button>
-      <button onclick="resetAll()">Reset</button>
+        <!-- Algorithm Information Cards -->
+        <div class="algo-info-section">
+            <h2>Algorithm Information</h2>
+            <div id="algoInfoGrid" class="algo-info-grid"></div>
+        </div>
     </div>
-  </div>
 
-  <!-- GRAPH -->
-  <div class="card">
-    <h2>Visualization</h2>
-    <canvas id="chart"></canvas>
-    <p id="stepInfo"></p>
-  </div>
-
-  <!-- METRICS -->
-  <div class="card">
-    <h2>Metrics</h2>
-    <p>Total Seek: <span id="totalSeek">-</span></p>
-    <p>Average Seek: <span id="avgSeek">-</span></p>
-    <p>Sequence: <span id="sequence">-</span></p>
-  </div>
-
-  <!-- COMPARISON -->
-  <div class="card">
-    <h2>Comparison</h2>
-    <table id="compareTable">
-      <thead>
-        <tr>
-          <th>Algorithm</th>
-          <th>Total Seek</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <!-- EDUCATIONAL -->
-  <div class="card">
-    <h2>Algorithms Info</h2>
-    <div id="info"></div>
-  </div>
-
-</div>
-
-<script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
